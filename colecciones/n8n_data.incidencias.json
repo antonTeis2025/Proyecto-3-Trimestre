@@ -1,0 +1,99 @@
+[{
+  "_id": {
+    "$oid": "65d8a2f1c3e4f5a6b7c8d9f5"
+  },
+  "estado": "cerrada",
+  "descripcion": "El ordenador no enciende, hace un pitido largo y dos cortos.",
+  "IP": "192.168.1.45",
+  "tipo": "hardware",
+  "momento": {
+    "$date": "2026-02-22T14:20:00.000Z"
+  },
+  "usuario_que_la_abrio": {
+    "$oid": "65d8a1b2c3e4f5a6b7c8d9e0"
+  },
+  "tecnico_asignado": {
+    "$oid": "65d8a1b2c3e4f5a6b7c8d9e2"
+  },
+  "historial_tecnicos": [
+    {
+      "tecnico_id": {
+        "$oid": "65d8a1b2c3e4f5a6b7c8d9e1"
+      },
+      "fecha_asignacion": {
+        "$date": "2026-02-22T14:30:00.000Z"
+      },
+      "notas": "Escalado a Nivel 2."
+    },
+    {
+      "tecnico_id": {
+        "$oid": "65d8a1b2c3e4f5a6b7c8d9e2"
+      },
+      "fecha_asignacion": {
+        "$date": "2026-02-23T09:00:00.000Z"
+      },
+      "notas": "Asumo el ticket tras la baja por enfermedad de Carlos."
+    }
+  ],
+  "solucion": "Se ha sustituido el módulo de memoria RAM defectuoso.",
+  "motivo_cierre": "reparacion_completada"
+},
+{
+  "_id": {
+    "$oid": "65d8a2f1c3e4f5a6b7c8d9f6"
+  },
+  "estado": "abierta",
+  "descripcion": "No puedo acceder a la VPN desde casa.",
+  "IP": "84.123.45.67",
+  "tipo": "redes",
+  "momento": {
+    "$date": "2026-02-24T08:15:00.000Z"
+  },
+  "usuario_que_la_abrio": {
+    "$oid": "65d8a1b2c3e4f5a6b7c8d9e0"
+  },
+  "tecnico_asignado": {
+    "$oid": "65d8a1b2c3e4f5a6b7c8d9e1"
+  },
+  "historial_tecnicos": [
+    {
+      "tecnico_id": {
+        "$oid": "65d8a1b2c3e4f5a6b7c8d9e1"
+      },
+      "fecha_asignacion": {
+        "$date": "2026-02-24T08:20:00.000Z"
+      },
+      "notas": "Asignación inicial."
+    }
+  ],
+  "solucion": null,
+  "motivo_cierre": null
+},
+{
+  "_id": {
+    "$oid": "699e3912c1c6b5d1ae5f1a22"
+  },
+  "estado": "abierta",
+  "descripcion": "La pantalla hace un pitido muy raro al encender el equipo y se queda en negro.",
+  "IP": "192.168.1.5",
+  "tipo": "hardware",
+  "momento": "2026-02-24T23:49:38.746Z",
+  "usuario_que_la_abrio": "699e3912c1c6b5d1ae5f1a21",
+  "solucion": null,
+  "motivo_cierre": null,
+  "historial_tecnicos": []
+},
+{
+  "_id": {
+    "$oid": "699e515cc1c6b5d1ae5f1a37"
+  },
+  "estado": "abierta",
+  "descripcion": "Problemas con el teclado: algunas teclas no funcionan bien",
+  "IP": "",
+  "tipo": "hardware",
+  "momento": "2026-02-25T01:33:16.384Z",
+  "usuario_que_la_abrio": "699e515cc1c6b5d1ae5f1a36",
+  "solucion": null,
+  "motivo_cierre": null,
+  "historial_tecnicos": []
+}]

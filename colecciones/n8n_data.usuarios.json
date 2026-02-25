@@ -1,0 +1,59 @@
+[{
+  "_id": {
+    "$oid": "65d8a1b2c3e4f5a6b7c8d9e0"
+  },
+  "tipo": "USUARIO",
+  "nombre": "Laura",
+  "apellidos": "Gómez Pérez",
+  "username": "lgomez",
+  "password": "$2b$10$hashedpasswordexample123",
+  "alta": {
+    "$date": "2026-01-15T09:30:00.000Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "65d8a1b2c3e4f5a6b7c8d9e1"
+  },
+  "tipo": "TECNICO",
+  "nombre": "Carlos",
+  "apellidos": "Ruiz",
+  "username": "cruiz_tech",
+  "password": "$2b$10$hashedpasswordexample456",
+  "alta": {
+    "$date": "2025-11-01T08:00:00.000Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "65d8a1b2c3e4f5a6b7c8d9e9"
+  },
+  "tipo": "ADMINISTRADOR",
+  "nombre": "Elena",
+  "apellidos": "Martín",
+  "username": "emartin_admin",
+  "password": "$2b$10$hashedpasswordexample999",
+  "alta": {
+    "$date": "2024-02-10T11:00:00.000Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "699e3912c1c6b5d1ae5f1a21"
+  },
+  "tipo": "USUARIO",
+  "nombre": "Carlos",
+  "apellidos": "Gómez",
+  "username": "cgomez",
+  "alta": "2026-02-24T23:49:38.652Z"
+},
+{
+  "_id": {
+    "$oid": "699e515cc1c6b5d1ae5f1a36"
+  },
+  "tipo": "USUARIO",
+  "nombre": "Antón",
+  "apellidos": "Dávila",
+  "username": "adavila",
+  "alta": "2026-02-25T01:33:16.290Z"
+}]
