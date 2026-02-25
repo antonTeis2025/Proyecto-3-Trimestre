@@ -177,9 +177,10 @@ db.incidencias.aggregate([
 ])
 ```
 
-# Vídeo explicativo
+# Enlaces
 
-[Click aquí](https://drive.google.com/file/d/1xzoomsgH3dnct47OorwLuWTCLbBhgNmG/view?usp=sharing)
+ - Video explicativo: [Click aquí](https://drive.google.com/file/d/1xzoomsgH3dnct47OorwLuWTCLbBhgNmG/view?usp=sharing)
+ - Despliegue v0: [Click aquí](https://vm-vy4fv8rhep3xxl7re7nqu4.vusercontent.net/)
 
 # Conclusión
 
