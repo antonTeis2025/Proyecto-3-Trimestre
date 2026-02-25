@@ -176,3 +176,13 @@ db.incidencias.aggregate([
   { $sort: { cantidad: -1 } }
 ])
 ```
+
+# Vídeo explicativo
+
+[Click aquí](https://drive.google.com/file/d/1xzoomsgH3dnct47OorwLuWTCLbBhgNmG/view?usp=sharing)
+
+# Conclusión
+
+Las automatizaciones con inteligencia artificial sin duda ahorran mucho trabajo y son fáciles de desplegar, este supuesto por ejemplo aunque no esté preparado para una aplicación real me ha llevado unas pocas horas para ponerlo a funcionar de forma básica. Las automatizaciones como tal son una cosa que ya había hecho y que ya existía desde hace muchos años cuando se hacían con python o javascript en una VPS, pero con n8n, es muy fácil hacerse al sistema de los nodos y sobre todo es muy fácil trasladar el conocimiento de automaticaciones a la plataforma. La única pega que le veo, es que tiene muchas inconsistencias sobre todo el tema de la inteligencia artificial, aunque estemos tomando de base el uso de una gratuita. Los datos se mezclan, no viajan bien, y el formato tiene que estar especificado con flechas y circulos para que no falle nunca, y aún así, tiene inconsistencias si no eres lo suficientemente específico.
+
+En conclusión, me ha gustado hacer este trabajo, me parece algo aplicable incluso a mis proyectos personales, donde ya tenía alguna automatización pensada para hacer que seguramente lleve a cabo después de este primer contacto.
