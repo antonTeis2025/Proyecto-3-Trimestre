@@ -36,3 +36,79 @@ Este subworkflow tiene como input los parametros basicos de la incidencia y del 
  2. Prepara la query y busca en **BBDD si existe un usuario** con ese nombre y apellidos. En caso de que **exista** simplemente inserta la incidencia referenciando su ID.
  3. Si **NO existe** el usuario lo crea generando el username en base a su nombre y apellido, comprobando que no exista otro username igual.
  4. Inserta la incidencia.
+
+# Consultas / Aggregation Framework
+
+## Métodos CRUD
+
+#### Insertar nueva incidencia abierta
+
+```javascript
+db.incidencias.insertOne({
+  estado: "ABIERTAS",
+  descripcion: "El monitor parpadea constantemente.",
+  IP: "192.168.1.50",
+  tipo: "hardware",
+  momento: new Date(),
+  usuario_que_la_abrio: ObjectId("65d8a1b2c3e4f5a6b7c8d9e0"),
+  tecnico_asignado: null,
+  historial_tecnicos: [],
+  solucion: null,
+  motivo_cierre: null
+})
+```
+
+#### Actualizar una incidencia (ponerla en proceso y agregarle un tecnico)
+
+```javascript
+// Opcional: parámetro definido por el usuario
+var idIncidenciaAModificar = ObjectId("65d8a2f1c3e4f5a6b7c8d9f7"); 
+
+db.incidencias.updateOne(
+  { _id: idIncidenciaAModificar },
+  { 
+    $set: { 
+      estado: "EN PROCESO", 
+      tecnico_asignado: ObjectId("65d8a1b2c3e4f5a6b7c8d9e1") 
+    },
+    $push: { 
+      historial_tecnicos: {
+        tecnico_id: ObjectId("65d8a1b2c3e4f5a6b7c8d9e1"),
+        fecha_asignacion: new Date(),
+        notas: "Asignación manual desde administración."
+      }
+    }
+  }
+)
+```
+
+#### Borrado de una incidencia
+
+```javascript
+var idIncidenciaABorrar = ObjectId("65d8a2f1c3e4f5a6b7c8d9f7");
+
+db.incidencias.deleteOne({ _id: idIncidenciaABorrar })
+```
+
+## Consultas
+
+#### Buscar todas las incidencias por estado (ej. "ABIERTAS")
+
+```javascript
+var parametroEstado = "ABIERTAS";
+db.incidencias.find({ estado: parametroEstado })
+```
+
+#### Buscar incidencias de un usuario concreto ordenadas por la más reciente
+
+```javascript
+var parametroUsuarioId = ObjectId("65d8a1b2c3e4f5a6b7c8d9e0");
+db.incidencias.find({ usuario_que_la_abrio: parametroUsuarioId }).sort({ momento: -1 })
+```
+
+#### Buscar incidencias que contengan una palabra específica en la descripción (búsqueda con regex)
+
+```javascript
+var palabraClave = "VPN";
+db.incidencias.find({ descripcion: { $regex: palabraClave, $options: "i" } }) // "i" ignora mayúsculas/minúsculas
+```
