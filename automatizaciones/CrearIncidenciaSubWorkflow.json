@@ -1,0 +1,424 @@
+{
+  "name": "CrearIncidenciaSubWorkflow",
+  "nodes": [
+    {
+      "parameters": {
+        "collection": "usuarios",
+        "options": {
+          "limit": 1
+        },
+        "query": "{\n  \"username\": { \"$regex\": \"^{{ $json.baseUsername }}\" }\n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        736,
+        48
+      ],
+      "id": "3d59f479-4f30-47c3-b5ec-9d092092917d",
+      "name": "Buscar si existe el username",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mongoDb": {
+          "id": "Z8oSUYhC1NPEN8lg",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recuperamos datos de los nodos anteriores\nconst triggerData = $('Parse input').first().json;\nconst baseUsername = $('Generar Base').first().json.baseUsername;\nconst usuariosEncontrados = $input.first().json;\nconst listaUsernames = Array.isArray(usuariosEncontrados) ? usuariosEncontrados.map(u => u.username) : [];\n\nlet finalUsername = baseUsername;\nlet counter = 2;\n\nwhile (listaUsernames.includes(finalUsername)) {\n    finalUsername = baseUsername + counter;\n    counter++;\n}\n\n// Preparamos EXACTAMENTE lo que se va a guardar en MongoDB\nreturn {\n    tipo: \"USUARIO\",\n    nombre: triggerData.nombre,\n    apellidos: triggerData.apellidos,\n    username: finalUsername,\n    alta: new Date() // Genera la fecha actual automáticamente\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        944,
+        48
+      ],
+      "id": "92d2ac15-9b2d-44a9-b44d-371f51345f73",
+      "name": "Preparar datos del usuario",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "usuarios",
+        "fields": "tipo, nombre, apellidos, username, alta",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        48
+      ],
+      "id": "a5ed6a98-6227-4181-bf28-9a2831fb6847",
+      "name": "Insertar usuario",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z8oSUYhC1NPEN8lg",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recuperamos los datos del inicio\nconst triggerData = $('Parse input').first().json;\n\n// Recuperamos el ID que MongoDB acaba de generar para el usuario\n// OJO: Cambia 'MongoDB 1' por el nombre exacto de tu nodo del Paso 5\nconst usuarioId = $('Insertar usuario').first().json._id;\n\nreturn {\n    estado: \"abierta\",\n    descripcion: triggerData.descripcion,\n    IP: triggerData.IP || \"\",\n    tipo: triggerData.tipo || \"general\",\n    momento: new Date(),\n    usuario_que_la_abrio: usuarioId,\n    solucion: null,\n    motivo_cierre: null,\n    historial_tecnicos: []\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        336
+      ],
+      "id": "5d667cff-9fe7-4f0e-98e9-78d34b77f8e3",
+      "name": "Preparar incidencia"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "incidencias",
+        "fields": "estado, descripcion, IP, tipo, momento, usuario_que_la_abrio, solucion, motivo_cierre, historial_tecnicos",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        336
+      ],
+      "id": "02cb5d3e-df96-496a-86f0-a464cee69a98",
+      "name": "Insert documents",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z8oSUYhC1NPEN8lg",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -560,
+        -48
+      ],
+      "id": "1da9631a-6dd4-44cf-b0cb-d7532b8c59a5",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recuperamos los datos del Trigger\nconst nombre = $('Parse input').first().json.nombre || '';\nconst apellidos = $('Parse input').first().json.apellidos || '';\n\n// Función para limpiar acentos, ñ y poner en minúsculas\nconst cleanString = (str) => {\n  return str.normalize(\"NFD\").replace(/[\\u0300-\\u036f]/g, \"\").toLowerCase().replace(/[^a-z0-9]/g, '');\n};\n\nconst nombreLimpio = cleanString(nombre);\nconst apellidosLimpios = cleanString(apellidos);\n\n// Creamos la base: 1ª letra del nombre + primer apellido\nconst baseUsername = nombreLimpio.charAt(0) + apellidosLimpios; \n\nreturn {\n  baseUsername: baseUsername\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        48
+      ],
+      "id": "5fc10acc-ebda-40b8-9e40-039f373aacfb",
+      "name": "Generar Base"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "24b989c7-9abd-434d-ba70-471bab71ccab",
+              "leftValue": "={{ $json._id.toString() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        400,
+        -64
+      ],
+      "id": "d93b4c62-0552-40a2-bcb2-5d885a47450b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Cogemos los datos que entran\nconst inputData = $input.first().json;\n\nconst nombre = (inputData.nombre || '').trim();\nconst apellidos = (inputData.apellidos || '').trim();\n\n// Creamos la query exacta para Mongo\nconst mongoQuery = {\n  \"nombre\": { \"$regex\": nombre, \"$options\": \"i\" },\n  \"apellidos\": { \"$regex\": apellidos, \"$options\": \"i\" }\n};\n\n// Devolvemos los datos originales + la query lista para usar\nreturn {\n  ...inputData,\n  queryDeBusqueda: mongoQuery\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        -48
+      ],
+      "id": "2e16abc0-6af3-4224-8fe6-ba827de08701",
+      "name": "PreparaQuery"
+    },
+    {
+      "parameters": {
+        "collection": "usuarios",
+        "options": {},
+        "query": "={{ JSON.stringify($json.queryDeBusqueda) }}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        112,
+        -48
+      ],
+      "id": "f7aeb695-6aac-4a8c-9209-8086c12e075f",
+      "name": "Buscar Usuario Existente",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mongoDb": {
+          "id": "Z8oSUYhC1NPEN8lg",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Recuperamos los datos de la avería desde el inicio (Asegúrate de que este sea el nombre exacto de tu Trigger)\nconst triggerData = $('Parse input').first().json;\n\n// 2. Recuperamos el ID del usuario que acabamos de encontrar\nconst usuarioId = $input.first().json._id;\n\n// 3. Preparamos el ticket listo para MongoDB\nreturn {\n    estado: \"abierta\",\n    descripcion: triggerData.descripcion,\n    IP: triggerData.IP || \"\",\n    tipo: triggerData.tipo || \"general\",\n    momento: new Date(),\n    usuario_que_la_abrio: usuarioId, // <-- Aquí metemos el ID que ya existía\n    solucion: null,\n    motivo_cierre: null,\n    historial_tecnicos: []\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        -272
+      ],
+      "id": "0521056c-3632-4d48-9eda-18a111387006",
+      "name": "Preparar Incidencia Existente"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "incidencias",
+        "fields": "estado, descripcion, IP, tipo, momento, usuario_que_la_abrio, solucion, motivo_cierre, historial_tecnicos",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        848,
+        -272
+      ],
+      "id": "fd0ce6d0-ab82-458d-82c7-2bfe9fed2eba",
+      "name": "Insert documents1",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z8oSUYhC1NPEN8lg",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  respuesta_para_ia: \"¡Éxito! La incidencia ha sido registrada correctamente. Informa al usuario.\"\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1616,
+        80
+      ],
+      "id": "fbcc49d3-0113-4eb4-8ecc-eeadcd695f3e",
+      "name": "Informar Agente"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (let item of $input.all()) {\n  // 1. Si los datos ya vienen perfectos y sueltos, no hacemos nada.\n  if (item.json.nombre) {\n    continue; \n  }\n\n  let datosEncontrados = false;\n\n  // 2. Buscamos en TODOS los campos del JSON (se llame 'input', 'datos_reales', etc.)\n  for (let key in item.json) {\n    let valor = item.json[key];\n\n    // Caso A: La IA lo mandó como un texto (String) que parece un JSON\n    if (typeof valor === 'string' && valor.includes('nombre')) {\n      try {\n        let textoLimpio = valor.replace(/```json/gi, '').replace(/```/g, '').trim();\n        let parseado = JSON.parse(textoLimpio);\n        item.json = parseado; // Sobrescribimos con los datos limpios\n        datosEncontrados = true;\n        break;\n      } catch (error) {\n        item.json.ERROR_DE_PARSEO = error.message;\n        item.json.TEXTO_CULPABLE = valor;\n      }\n    } \n    // Caso B: La IA lo mandó como un Objeto real, pero metido dentro de una sub-carpeta (ej. item.json.input.nombre)\n    else if (typeof valor === 'object' && valor !== null && valor.nombre) {\n      item.json = valor; // Lo sacamos a la raíz\n      datosEncontrados = true;\n      break;\n    }\n  }\n\n  // 3. Si después de buscar por todos lados no encontramos nada útil:\n  if (!datosEncontrados && !item.json.ERROR_DE_PARSEO) {\n    item.json.AYUDA = \"El Agente no envió la palabra 'nombre' en ningún formato reconocible.\";\n    item.json.LO_QUE_LLEGO = JSON.stringify(item.json);\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        -48
+      ],
+      "id": "f7546b44-fa55-4f89-877c-139842e132dd",
+      "name": "Parse input"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Buscar si existe el username": {
+      "main": [
+        [
+          {
+            "node": "Preparar datos del usuario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar datos del usuario": {
+      "main": [
+        [
+          {
+            "node": "Insertar usuario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insertar usuario": {
+      "main": [
+        [
+          {
+            "node": "Preparar incidencia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar incidencia": {
+      "main": [
+        [
+          {
+            "node": "Insert documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar Base": {
+      "main": [
+        [
+          {
+            "node": "Buscar si existe el username",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PreparaQuery": {
+      "main": [
+        [
+          {
+            "node": "Buscar Usuario Existente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Usuario Existente": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Preparar Incidencia Existente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generar Base",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Incidencia Existente": {
+      "main": [
+        [
+          {
+            "node": "Insert documents1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert documents1": {
+      "main": [
+        [
+          {
+            "node": "Informar Agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert documents": {
+      "main": [
+        [
+          {
+            "node": "Informar Agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse input": {
+      "main": [
+        [
+          {
+            "node": "PreparaQuery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "24a9c2d2-5fc8-4659-b447-915bf2e0ff86",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c84ccd9e0bdfa924c417a93cc117b98d8521e2030a2a89435162cafc5f0bda08"
+  },
+  "id": "a0iMRlJ8WXrwmhxP",
+  "tags": []
+}
