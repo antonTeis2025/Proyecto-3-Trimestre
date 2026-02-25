@@ -110,5 +110,69 @@ db.incidencias.find({ usuario_que_la_abrio: parametroUsuarioId }).sort({ momento
 
 ```javascript
 var palabraClave = "VPN";
-db.incidencias.find({ descripcion: { $regex: palabraClave, $options: "i" } }) // "i" ignora mayúsculas/minúsculas
+db.incidencias.find({ descripcion: { $regex: palabraClave, $options: "i" } })
+```
+
+## Aggregation Frameworks
+
+#### Productividad de los técnicos: Número de incidencias resueltas por cada técnico, mostrando su nombre real
+
+```javascript
+db.incidencias.aggregate([
+  { $match: { estado: { $in: ["RESUELTAS", "CERRADAS"] } } },
+  { $group: { _id: "$tecnico_asignado", total_solucionadas: { $sum: 1 } } },
+  { $lookup: { 
+      from: "usuarios", 
+      localField: "_id", 
+      foreignField: "_id", 
+      as: "datos_tecnico" 
+  }},
+  { $unwind: "$datos_tecnico" },
+  { $project: { 
+      _id: 0, 
+      tecnico: { $concat: ["$datos_tecnico.nombre", " ", "$datos_tecnico.apellidos"] }, 
+      total_solucionadas: 1 
+  }},
+  { $sort: { total_solucionadas: -1 } }
+])
+```
+
+#### Análisis de reasignaciones: Mostrar las incidencias que han sido pasadas de un técnico a otro más de X veces
+
+```javascript
+var minimoReasignaciones = 1;
+
+db.incidencias.aggregate([
+  { $match: { estado: { $ne: "ABIERTAS" } } }, 
+  { $unwind: "$historial_tecnicos" },
+  { $group: { 
+      _id: "$_id", 
+      descripcion: { $first: "$descripcion" }, 
+      num_reasignaciones: { $sum: 1 } 
+  }},
+  { $match: { num_reasignaciones: { $gt: minimoReasignaciones } } },
+  { $sort: { num_reasignaciones: -1 } }
+])
+```
+
+#### Estadísticas de tipos de incidencias creadas por un TIPO de usuario específico (ej: "ADMINISTRADOR")
+
+```javascript
+var parametroTipoUsuario = "ADMINISTRADOR";
+
+db.incidencias.aggregate([
+  { $lookup: { 
+      from: "usuarios", 
+      localField: "usuario_que_la_abrio", 
+      foreignField: "_id", 
+      as: "info_usuario" 
+  }},
+  { $unwind: "$info_usuario" },
+  { $match: { "info_usuario.tipo": parametroTipoUsuario } },
+  { $group: { 
+      _id: { tipo_incidencia: "$tipo", estado: "$estado" }, 
+      cantidad: { $sum: 1 } 
+  }},
+  { $sort: { cantidad: -1 } }
+])
 ```
